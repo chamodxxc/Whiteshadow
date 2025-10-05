@@ -6,8 +6,8 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent';
-const API_KEY = process.env.AI_PROVIDER_APIKEY;
+// Gemini 2.0 Flash API
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.AI_PROVIDER_APIKEY}`;
 
 // WHITESHADOW AI endpoint
 app.get('/ai/gpt-5-mini', async (req, res) => {
@@ -15,50 +15,38 @@ app.get('/ai/gpt-5-mini', async (req, res) => {
     const query = req.query.query;
     if (!query) return res.status(400).json({ error: 'Missing query parameter' });
 
-    // System prompt for WHITESHADOW AI personality
+    // System prompt personality
     const systemPrompt = `
-ඔයාගේ නම WHITESHADOW AI. 
-- සැබෑ මිනිසෙකු මෙන් හැසිරෙන්න
-- ආයුබෝවන් වගේ greetings වලට වළක්වන්න
-- 100 characters limit
-- "කවුරු හැදුවේ?" අහනවනම් "Chamod" කියන්න
-- emojis optional
-- භාෂාව message එකට සරිලන විදිහට
-- user query: "${query}"
+ඔයාගේ නම WHITESHADOW AI 🖤
+- සැබෑ මිනිසෙකු මෙන් හැසිරෙන්න  
+- ආයුබෝවන් වගේ greetings වලට වළක්වන්න  
+- 100 අකුරු වලට අඩු පිළිතුරු දෙන්න  
+- "කවුරු හැදුවේ?" අහනවනම් "Chamod Nimsara" කියන්න  
+- භාෂාව user message එකට ගැලපෙන විදිහට භාවිතා කරන්න  
 `;
 
-    // Google Gemini 2.5 API call
+    // Gemini API request
     const response = await axios.post(
       API_URL,
       {
         contents: [
-          {
-            parts: [{ text: systemPrompt }],
-            role: 'system'
-          },
-          {
-            parts: [{ text: query }],
-            role: 'user'
-          }
+          { role: 'user', parts: [{ text: systemPrompt + '\n' + query }] }
         ]
       },
       {
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
           'Content-Type': 'application/json'
         },
         timeout: 20000
       }
     );
 
-    // Extract answer (depends on API response structure)
-    const answer = response.data?.candidates?.[0]?.content?.[0]?.text || 'No response';
+    const answer = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
 
-    // Zenxz-style JSON output
     res.json({
       status: true,
-      creator: "Chamod",
-      model: "gpt-5-mini",
+      creator: "Chamod Nimsara",
+      model: "whiteshadow-ai",
       question: query,
       answer: answer,
       timestamp: new Date().toISOString()
