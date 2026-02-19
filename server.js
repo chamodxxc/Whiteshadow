@@ -53,5 +53,5 @@ app.get('/ai/gpt-5-mini', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`WHITESHADOW AI server running on port ${PORT}`));
+// Vercel deployment සඳහා app එක export කිරීම
+export default app;
